@@ -1,33 +1,39 @@
 /*
- * Basic IO Board Demo:
- * Demo for the uc
- * libraries used:
- * LiquidCrystalIO install via Library Manager https://github.com/davetcc/LiquidCrystalIO/
- * IOAbstarction installed with LiquidCrystalIO https://github.com/davetcc/IoAbstraction
- * IRRemote install via Library Manager https://github.com/Arduino-IRremote/Arduino-IRremote
- */
- 
+   Basic IO Board Demo:
+   Demo for the uc
+   libraries used:
+   LiquidCrystalIO install via Library Manager https://github.com/davetcc/LiquidCrystalIO/
+   IOAbstraction installed with LiquidCrystalIO https://github.com/davetcc/IoAbstraction
+   TaskManagerIO installed with LiquidCrystalIO https://github.com/davetcc/TaskManagerIO
+   SimpleCollections installed with LiquidCrystalIO https://github.com/davetcc/SimpleCollections
+   IRRemote install via Library Manager https://github.com/Arduino-IRremote/Arduino-IRremote
+*/
+
 #include <IRremote.hpp>
 #include <LiquidCrystalIO.h>
 #include <IoAbstractionWire.h>
-#include <Wire.h> 
+#include <Wire.h>
 
 LiquidCrystalI2C_RS_EN(lcd, 0x27, false)
 
+/* Pin Definitions */
 const int IR_RECEIVE_PIN = 2;
 
 const int GREEN_BTN_PIN = 3;
 const int YELLOW_BTN_PIN = 4;
 const int RED_BTN_PIN = 5;
 
-int btnState = 0;
-int lastBtnState = -1;
-
 const int GREEN_LED_PIN = 6;
 const int YELLOW_LED_PIN = 7;
 const int RED_LED_PIN = 8;
 
-// Variables will change:
+/* Constants */
+const long interval = 100;    // interval at which to blink (milliseconds)
+
+/* Variables */
+int btnState = 0;
+int lastBtnState = -1;
+
 int ledState = 0;             // ledState used to set the LEDs
 
 int potiVal = 0;
@@ -35,31 +41,24 @@ int lastPotiVal = -1;
 
 unsigned long irVal;
 
-// Generally, you should use "unsigned long" for variables that hold time
-// The value will quickly become too large for an int to store
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
-// constants won't change:
-const long interval = 100;           // interval at which to blink (milliseconds)
-
-
-void setup()
+void lcdSetup()
 {
-  Serial.begin(115200);
-  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK); // Start the receiver
-
-  pinMode(GREEN_LED_PIN, OUTPUT);
-  pinMode(YELLOW_LED_PIN, OUTPUT);
-  pinMode(RED_LED_PIN, OUTPUT);
-
   Wire.begin();
-  lcd.begin (16, 2); // Muss in jedem Falle sein um Zeilen/Spalten zu deklarieren
+
+  lcd.begin (16, 2);
   lcd.configureBacklightPin(3);
   lcd.backlight();
   lcd.home ();
-  lcd.print("Hello World");
 }
 
+void pinSetup()
+{
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(YELLOW_LED_PIN, OUTPUT);
+  pinMode(RED_LED_PIN, OUTPUT);
+}
 
 void ledLoop()
 {
@@ -91,7 +90,8 @@ void ledLoop()
   }
 }
 
-void irRcvLoop() {
+void irRcvLoop() 
+{
   if (IrReceiver.decode()) {
     irVal = IrReceiver.decodedIRData.decodedRawData;
     Serial.println(irVal, HEX); // Print "old" raw data
@@ -102,10 +102,10 @@ void irRcvLoop() {
     lcd.print(irVal, HEX);
     IrReceiver.resume(); // Enable receiving of the next value
   }
-
 }
 
-void btnLoop() {
+void btnLoop() 
+{
   if (digitalRead(GREEN_BTN_PIN) == LOW)
     btnState |= 0x01;
   else
@@ -129,7 +129,8 @@ void btnLoop() {
   }
 }
 
-void potiLoop() {
+void potiLoop() 
+{
   potiVal = analogRead(A0) / 4;
   if (potiVal != lastPotiVal) {
     Serial.print("Poti: ");
@@ -142,8 +143,17 @@ void potiLoop() {
   }
 }
 
-void loop() {
+void setup()
+{
+  Serial.begin(115200);
+  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK); // Start the receiver
 
+  pinSetup();
+  lcdSetup();
+}
+
+void loop() 
+{
   ledLoop();
   irRcvLoop();
   btnLoop();
