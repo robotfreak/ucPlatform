@@ -1,11 +1,18 @@
+/*
+ * Basic IO Board Demo:
+ * Demo for the uc
+ * libraries used:
+ * LiquidCrystalIO install via Library Manager https://github.com/davetcc/LiquidCrystalIO/
+ * IOAbstarction installed with LiquidCrystalIO https://github.com/davetcc/IoAbstraction
+ * IRRemote install via Library Manager https://github.com/Arduino-IRremote/Arduino-IRremote
+ */
+ 
 #include <IRremote.hpp>
-#include <Wire.h> // Diese Lib fehlte und damit die I2C Ansteuerung
-#include <LCD.h> // Standard LCD Funktionen
-#include <LiquidCrystal_I2C.h> // Umsetzung I2C auf LCD parallel Interface
+#include <LiquidCrystalIO.h>
+#include <IoAbstractionWire.h>
+#include <Wire.h> 
 
-#include <SainSmart_LCD_I2C.h> // Definitionen f�r das SainSmart LCD 4*20 I2C (2014) 
-
-LiquidCrystal_I2C lcd(I2C_ADDR, En_pin, Rw_pin, Rs_pin, D4_pin, D5_pin, D6_pin, D7_pin);
+LiquidCrystalI2C_RS_EN(lcd, 0x27, false)
 
 const int IR_RECEIVE_PIN = 2;
 
@@ -45,9 +52,10 @@ void setup()
   pinMode(YELLOW_LED_PIN, OUTPUT);
   pinMode(RED_LED_PIN, OUTPUT);
 
+  Wire.begin();
   lcd.begin (16, 2); // Muss in jedem Falle sein um Zeilen/Spalten zu deklarieren
-  lcd.setBacklightPin(BACKLIGHT_PIN, POSITIVE);  // Backlight an
-  lcd.setBacklight(HIGH);
+  lcd.configureBacklightPin(3);
+  lcd.backlight();
   lcd.home ();
   lcd.print("Hello World");
 }
