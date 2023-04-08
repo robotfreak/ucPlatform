@@ -10,11 +10,13 @@
 */
 
 #include <IRremote.hpp>
+#include <Encoder.h>
 #include <LiquidCrystalIO.h>
 #include <IoAbstractionWire.h>
 #include <Wire.h>
 
 LiquidCrystalI2C_RS_EN(lcd, 0x27, false)
+Encoder myEnc(9, 10);
 
 /* Pin Definitions */
 const int IR_RECEIVE_PIN = 2;
@@ -40,6 +42,9 @@ int potiVal = 0;
 int lastPotiVal = -1;
 
 unsigned long irVal;
+
+long encPosition = 0;
+long oldEncPosition  = -999;
 
 unsigned long previousMillis = 0;        // will store last time LED was updated
 
@@ -143,6 +148,15 @@ void potiLoop()
   }
 }
 
+void encLoop() 
+{
+  encPosition = myEnc.read();
+  if (encPosition != oldEncPosition) {
+    oldEncPosition = encPosition;
+    Serial.println(encPosition);
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -158,4 +172,5 @@ void loop()
   irRcvLoop();
   btnLoop();
   potiLoop();
+  encLoop();
 }
