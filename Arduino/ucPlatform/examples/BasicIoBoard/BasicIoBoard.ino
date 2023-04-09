@@ -14,9 +14,7 @@
 #include <LiquidCrystalIO.h>
 #include <IoAbstractionWire.h>
 #include <Wire.h>
-
-LiquidCrystalI2C_RS_EN(lcd, 0x27, false)
-Encoder myEnc(9, 10);
+#include "pitches.h"
 
 /* Pin Definitions */
 const int IR_RECEIVE_PIN = 2;
@@ -29,8 +27,16 @@ const int GREEN_LED_PIN = 6;
 const int YELLOW_LED_PIN = 7;
 const int RED_LED_PIN = 8;
 
+const int ENC_A_PIN = 9;
+const int ENC_B_PIN = 10;
+
+const int BUZZER_PIN = 11;
+
 /* Constants */
 const long interval = 100;    // interval at which to blink (milliseconds)
+
+LiquidCrystalI2C_RS_EN(lcd, 0x27, false)
+Encoder myEnc(ENC_A_PIN, ENC_B_PIN);
 
 /* Variables */
 int btnState = 0;
@@ -103,24 +109,30 @@ void irRcvLoop()
     IrReceiver.printIRResultShort(&Serial); // Print complete received data in one line
     IrReceiver.printIRSendUsage(&Serial);   // Print the statement required to send this data
     lcd.setCursor(0, 1);
-    lcd.print("IR: ");
-    lcd.print(irVal, HEX);
+    lcd.print("I: ");
+    lcd.print((irVal>>16), HEX);
     IrReceiver.resume(); // Enable receiving of the next value
   }
 }
 
 void btnLoop() 
 {
-  if (digitalRead(GREEN_BTN_PIN) == LOW)
+  if (digitalRead(GREEN_BTN_PIN) == LOW) {
     btnState |= 0x01;
+    tone(BUZZER_PIN, NOTE_C5, 125);
+  }
   else
     btnState &= ~0x01;
-  if (digitalRead(YELLOW_BTN_PIN) == LOW)
+  if (digitalRead(YELLOW_BTN_PIN) == LOW) {
     btnState |= 0x02;
+    tone(BUZZER_PIN, NOTE_B4, 125);
+  }
   else
     btnState &= ~0x02;
-  if (digitalRead(RED_BTN_PIN) == LOW)
+  if (digitalRead(RED_BTN_PIN) == LOW) {
     btnState |= 0x04;
+    tone(BUZZER_PIN, NOTE_A4, 125);
+  }
   else
     btnState &= ~0x04;
   if (btnState != lastBtnState) {
@@ -154,6 +166,10 @@ void encLoop()
   if (encPosition != oldEncPosition) {
     oldEncPosition = encPosition;
     Serial.println(encPosition);
+    lcd.setCursor(8, 1);
+    lcd.print("E:     ");
+    lcd.setCursor(11, 1);
+    lcd.print(encPosition, HEX);
   }
 }
 
@@ -164,6 +180,7 @@ void setup()
 
   pinSetup();
   lcdSetup();
+  analogWrite(11,128);
 }
 
 void loop() 
