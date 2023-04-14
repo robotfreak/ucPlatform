@@ -10,14 +10,17 @@
 */
 
 #include <IRremote.hpp>
+//#define USE_ENCODER
+#ifdef USE_ENCODER
 #include <Encoder.h>
+#endif
 #include <LiquidCrystalIO.h>
 #include <IoAbstractionWire.h>
 #include <Wire.h>
 #include "pitches.h"
 
 /* Pin Definitions */
-const int IR_RECEIVE_PIN = 2;
+const int IR_RECEIVE_PIN = 12;
 
 const int GREEN_BTN_PIN = 3;
 const int YELLOW_BTN_PIN = 4;
@@ -27,17 +30,19 @@ const int GREEN_LED_PIN = 6;
 const int YELLOW_LED_PIN = 7;
 const int RED_LED_PIN = 8;
 
+#ifdef USE_ENCODER
 const int ENC_A_PIN = 9;
 const int ENC_B_PIN = 10;
-
+#endif
 const int BUZZER_PIN = 11;
 
 /* Constants */
 const long interval = 100;    // interval at which to blink (milliseconds)
 
 LiquidCrystalI2C_RS_EN(lcd, 0x27, false)
+#ifdef USE_ENCODER
 Encoder myEnc(ENC_A_PIN, ENC_B_PIN);
-
+#endif
 /* Variables */
 int btnState = 0;
 int lastBtnState = -1;
@@ -56,7 +61,7 @@ unsigned long previousMillis = 0;        // will store last time LED was updated
 
 void lcdSetup()
 {
-  Wire.begin();
+  Wire1.begin();
 
   lcd.begin (16, 2);
   lcd.configureBacklightPin(3);
@@ -160,6 +165,7 @@ void potiLoop()
   }
 }
 
+#ifdef USE_ENCODER
 void encLoop() 
 {
   encPosition = myEnc.read();
@@ -172,6 +178,7 @@ void encLoop()
     lcd.print(encPosition, HEX);
   }
 }
+#endif
 
 void setup()
 {
@@ -189,5 +196,7 @@ void loop()
   irRcvLoop();
   btnLoop();
   potiLoop();
+#ifdef USE_ENCODER
   encLoop();
+#endif
 }
